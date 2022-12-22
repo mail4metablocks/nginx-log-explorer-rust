@@ -47,6 +47,24 @@ fn parse_nginx_log_line(line: &str) -> Option<NginxLog> {
     })
 }
 
+fn print_logs(logs: &[NginxLog]) {
+    let mut table = table!([bFg -> "Remote Address", "Remote User", "Request Time", "Request", "Status", "Body Bytes Sent", "HTTP Referer", "HTTP User Agent"]);
+    for log in logs {
+        table.add_row(row![
+            log.remote_addr,
+            log.remote_user,
+            log.request_time.to_string(),
+            log.request,
+            log.status,
+            log.body_bytes_sent,
+            log.http_referer,
+            log.http_user_agent,
+        ]);
+    }
+    table.printstd();
+}
+
+
 fn read_nginx_logs<P: AsRef<Path>>(path: P) -> Result<Vec<NginxLog>, Box<dyn Error>> {
     let path = path.as_ref();
     let logs = if path.is_dir() {
@@ -84,3 +102,8 @@ fn read_nginx_logs<P: AsRef<Path>>(path: P) -> Result<Vec<NginxLog>, Box<dyn Err
     Ok(logs)
 }
 
+fn main() -> Result<(), Box<dyn Error>> {
+    let logs = read_nginx_logs("/path/to/logs")?;
+    print_logs(&logs);
+    Ok(())
+}
